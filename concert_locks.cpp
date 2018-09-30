@@ -19,10 +19,13 @@ void* spin1(void* val){
 	int* thread_cond = (int*)val; //cast void parameter into int for while condition
 	while(*thread_cond) {}
 
-	pthread_mutex_lock(&lock);
-	counter +=1;
-	//cout << counter << endl;
-	pthread_mutex_unlock(&lock);
+	while(counter < 10000){
+		pthread_mutex_lock(&lock);
+		if (counter < 10000)
+			counter +=1;
+		//cout << counter << endl;
+		pthread_mutex_unlock(&lock);
+	}
 }
 
 
@@ -50,7 +53,7 @@ int main(){
 
 	// wait for threads to pass through counter
 	cout << counter << endl;
-	while (counter < 1000){}
+	while (counter < 10000){}
 	cout << counter << endl;
 
 
