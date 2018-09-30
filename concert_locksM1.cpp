@@ -7,7 +7,9 @@
 #include <unistd.h>
 
 using namespace std;
+
 int counter = 0;
+pthread_t thread_num[1000] = {0}; // array of pthread identifiers
 pthread_mutex_t lock;
 
 
@@ -32,7 +34,6 @@ void* spin1(void* val){
 int main(){
 	//create 1000 pthreads - all spin on one variable
 	int all_threads_are_created = 1; // all threads initially spin on this variable
-	pthread_t thread_num[1000] = {0}; // array of pthread identifiers
 
 	pthread_mutex_init(&lock, NULL);
 
