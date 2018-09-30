@@ -13,6 +13,7 @@ pthread_mutex_t lock;
 
 // method 1: single pthread_lock
 // can't find pthread_lock... use pthread_mutex_lock?
+
 void* spin1(void* val){
 	//cout << "in spin" << endl;
 	

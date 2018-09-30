@@ -8,6 +8,9 @@
 
 using namespace std;
 
+int counter = 0;
+bool doorArray[10000] = {0};
+
 // method 2: array of 10,000 boolean variables
 
 void* spin2(void* val){
@@ -15,6 +18,8 @@ void* spin2(void* val){
 	
 	int* thread_cond = (int*)val; //cast void parameter into int for while condition
 	while(*thread_cond) {}
+
+
 }
 
 int main(){

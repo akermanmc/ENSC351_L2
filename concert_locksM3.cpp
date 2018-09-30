@@ -8,6 +8,8 @@
 
 using namespace std;
 
+int counter = 0;
+
 // method 3: single ticket lock
 
 void* spin3(void* val){
