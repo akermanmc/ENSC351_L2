@@ -8,7 +8,8 @@
 
 using namespace std;
 
-void* spin(void* val)
+// initial function for pthread creation
+void* init_spin(void* val)
 {
 	//cout << "in spin" << endl;
 	int* thread_cond = (int*)val;
@@ -16,15 +17,14 @@ void* spin(void* val)
 }
 
 int main(){
-	//create 1000 threads (pthreads?) - all spin on one variable?
-	int all_threads_are_created = 1;
-	pthread_t thread_num[1000] = {0};
+	//create 1000 pthreads - all spin on one variable
+	int all_threads_are_created = 1; // all threads initially spin on this variable
+	pthread_t thread_num[1000] = {0}; // array of pthread identifiers
 
 	for (int i=0;i<1000;i++)
 	{
-		pthread_create(&thread_num[i], NULL, spin, &all_threads_are_created);
+		pthread_create(&thread_num[i], NULL, init_spin, &all_threads_are_created);
 	}
-
 	return 0;
 }
 
