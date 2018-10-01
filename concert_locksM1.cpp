@@ -6,50 +6,46 @@
 #include <pthread.h>
 #include <unistd.h>
 
+#define NUM_THREADS 1000
+
 using namespace std;
 
-int counter = 0;
-pthread_t thread_num[1000] = {0}; // array of pthread identifiers
+bool all_threads_are_created = false;
+
+int theDoor = 0;
 pthread_mutex_t lock;
 
 
 // method 1: single pthread_lock
 // can't find pthread_lock... use pthread_mutex_lock?
+//yup, i think that is what he meant
 
 void* spin1(void* val){
-	//cout << "in spin" << endl;
-	
-	int* thread_cond = (int*)val; //cast void parameter into int for while condition
-	while(*thread_cond) {}
 
-	while(counter < 10000){
-		pthread_mutex_lock(&lock);
-		if (counter < 10000)
-			counter +=1;
-		//cout << counter << endl;
-		pthread_mutex_unlock(&lock);
-	}
+	while(!all_threads_are_created);
+
+	pthread_mutex_lock(&lock);
+	theDoor += 1;
+//	cerr<<"Thread "<<theDoor<<" has locked the mutex."<<endl; //each thread should print this once in a serial order
+	pthread_mutex_unlock(&lock);
+
+	pthread_exit(NULL);
 }
 
 int main(){
-	//create 1000 pthreads - all spin on one variable
-	int all_threads_are_created = 1; // all threads initially spin on this variable
-
 	pthread_mutex_init(&lock, NULL);
+	pthread_t thread_num[NUM_THREADS] = {0}; // array of pthread identifiers
 
-	for (int i=0;i<1000;i++)
+	for (int i=0; i < NUM_THREADS; i++)
 	{
-		pthread_create(&thread_num[i], NULL, spin1, &all_threads_are_created);
+		pthread_create(&thread_num[i], NULL, spin1, NULL);
 	}
 
 	//release all threads simultaneously:
-	all_threads_are_created = 0;
+	all_threads_are_created = true;
 
-	// wait for threads to pass through counter
-	cout << counter << endl;
-	while (counter < 10000){}
-	cout << counter << endl;
-
+	for (int i = 0; i < NUM_THREADS; i++)
+		pthread_join(thread_num[i],NULL);
 
 	return 0;
 }
