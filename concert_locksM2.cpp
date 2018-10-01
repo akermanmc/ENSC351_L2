@@ -22,9 +22,8 @@ void* spin2(void* val){
 
 	while(!PeopleArray[threadNum]);
 	theDoor += 1;
-	PeopleArray[(threadNum + 1)%NUM_THREADS] = true;
-	cerr<<"Thread "<<threadNum<<" has gone through the door."<<endl; //each thread should print this once in a serial order
-
+//	cerr<<"Thread "<<threadNum<<" has gone through the door."<<endl; //each thread should print this once in a serial order
+    PeopleArray[(threadNum + 1)%NUM_THREADS] = true;
 	pthread_exit(NULL);
 }
 
