@@ -5,32 +5,52 @@
 #include <cstdlib>
 #include <pthread.h>
 #include <unistd.h>
+#include <atomic>
+
+#define NUM_THREADS 100 //1000 is too heavy on Surface, laptop locks up
 
 using namespace std;
 
-int counter = 0;
-pthread_t thread_num[1000] = {0}; // array of pthread identifiers
+bool all_threads_are_created = false;
+int theDoor = 0;
+int now_serving = 0;
+atomic<int> next_ticket(0);
 
-// method 3: single ticket lock
+void tickeLock_aquire()
+{
+    int myTicket = next_ticket++;
+    while (now_serving != myTicket);
+}
+
+void ticketLock_release()
+{
+    ++now_serving;
+}
 
 void* spin3(void* val){
-	//cout << "in spin" << endl;
-	
-	int* thread_cond = (int*)val; //cast void parameter into int for while condition
-	while(*thread_cond) {}
+
+	while(!all_threads_are_created);
+
+	tickeLock_aquire();
+	theDoor++;
+//	cerr<<"Thread "<<theDoor<<" has gone through the door."<<endl; //each thread should print this once in a serial order
+	ticketLock_release();
+	pthread_exit(NULL);
 }
 
 int main(){
-	//create 1000 pthreads - all spin on one variable
-	int all_threads_are_created = 1; // all threads initially spin on this variable
+	pthread_t thread_num[NUM_THREADS] = {0}; // array of pthread identifiers
 
-	for (int i=0;i<1000;i++)
+	for (int i=0; i < NUM_THREADS; i++)
 	{
-		pthread_create(&thread_num[i], NULL, spin1, &all_threads_are_created);
+		pthread_create(&thread_num[i], NULL, spin3, NULL);
 	}
 
 	//release all threads simultaneously:
-	all_threads_are_created = 0;
+	all_threads_are_created = true;
+
+	for (int i = 0; i < NUM_THREADS; i++)
+		pthread_join(thread_num[i],NULL);
 
 	return 0;
 }
