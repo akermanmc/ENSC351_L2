@@ -6,44 +6,45 @@
 #include <pthread.h>
 #include <unistd.h>
 
+#define NUM_THREADS 100 //1000 is too heavy on Surface, laptop locks up
+
 using namespace std;
 
-int counter = 0;
-pthread_t thread_num[1000] = {0}; // array of pthread identifiers
-bool doorArray[10000] = {0};
-
-// method 2: array of 10,000 boolean variables
+bool all_threads_are_created = false;
+int theDoor = 0;
+bool PeopleArray[NUM_THREADS] = {false};
 
 void* spin2(void* val){
-	//cout << "in spin" << endl;
-	
-	int* thread_cond = (int*)val; //cast void parameter into int for while condition
-	while(*thread_cond) {}
+    //get the thread number
+    int threadNum = *(int*)val;
 
-	while (counter < 10000){
-		if(doorArray[counter] == 1){
-			doorArray[counter+1] = 1;
-			counter++;
-		}
-	}
+	while(!all_threads_are_created);
+
+	while(!PeopleArray[threadNum]);
+	theDoor += 1;
+	PeopleArray[(threadNum + 1)%NUM_THREADS] = true;
+	cerr<<"Thread "<<threadNum<<" has gone through the door."<<endl; //each thread should print this once in a serial order
+
+	pthread_exit(NULL);
 }
 
 int main(){
-	//create 1000 pthreads - all spin on one variable
-	int all_threads_are_created = 1; // all threads initially spin on this variable
+	pthread_t thread_num[NUM_THREADS] = {0}; // array of pthread identifiers
+	int thread_args[NUM_THREADS] = {0};
 
-	for (int i=0;i<1000;i++)
+	for (int i=0; i < NUM_THREADS; i++)
 	{
-		pthread_create(&thread_num[i], NULL, spin2, &all_threads_are_created);
+	    thread_args[i] = i;
+		pthread_create(&thread_num[i], NULL, spin2, &thread_args[i]);
 	}
 
 	//release all threads simultaneously:
-	all_threads_are_created = 0;
-	doorArray[0] = 1;
+	all_threads_are_created = true;
+	//set the first person to go through:
+    PeopleArray[0] = true;
 
-	cout << counter << endl;
-	while (counter < 10000){}
-	cout << counter << endl;
+	for (int i = 0; i < NUM_THREADS; i++)
+		pthread_join(thread_num[i],NULL);
 
 	return 0;
 }
