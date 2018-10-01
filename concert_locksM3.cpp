@@ -7,7 +7,8 @@
 #include <unistd.h>
 #include <atomic>
 
-#define NUM_THREADS 100 //1000 is too heavy on Surface, laptop locks up
+#define NUM_THREADS 1000 //1000 is too heavy on Surface, laptop locks up
+#define NUM_PEOPLE  10000
 
 using namespace std;
 
@@ -28,22 +29,30 @@ void ticketLock_release()
 }
 
 void* spin3(void* val){
-
+    int threadNum = *(int*)val;
 	while(!all_threads_are_created);
 
-	tickeLock_aquire();
-	theDoor++;
-//	cerr<<"Thread "<<theDoor<<" has gone through the door."<<endl; //each thread should print this once in a serial order
-	ticketLock_release();
+	while(theDoor < NUM_PEOPLE)
+	{
+		tickeLock_aquire();
+		if(theDoor < NUM_PEOPLE)
+		{	
+			theDoor++;
+//			cerr<<"Thread "<< threadNum<<" let Person "<<theDoor<<" through the door."<<endl; //each thread should print this once in a serial order
+		}
+		ticketLock_release();
+	}
 	pthread_exit(NULL);
 }
 
 int main(){
 	pthread_t thread_num[NUM_THREADS] = {0}; // array of pthread identifiers
+	int args[NUM_THREADS] = {0};
 
 	for (int i=0; i < NUM_THREADS; i++)
 	{
-		pthread_create(&thread_num[i], NULL, spin3, NULL);
+		args[i] = i;
+		pthread_create(&thread_num[i], NULL, spin3, &args[i]);
 	}
 
 	//release all threads simultaneously:

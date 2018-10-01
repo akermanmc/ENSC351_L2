@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #define NUM_THREADS 1000
+#define NUM_PEOPLE	10000
 
 using namespace std;
 
@@ -21,24 +22,31 @@ pthread_mutex_t lock;
 //yup, i think that is what he meant
 
 void* spin1(void* val){
-
+	int thread_num = *(int *)val;
 	while(!all_threads_are_created);
 
-	pthread_mutex_lock(&lock);
-	theDoor += 1;
-//	cerr<<"Thread "<<theDoor<<" has locked the mutex."<<endl; //each thread should print this once in a serial order
-	pthread_mutex_unlock(&lock);
-
+	while(theDoor < NUM_PEOPLE)
+	{
+		pthread_mutex_lock(&lock);
+		if(theDoor < NUM_PEOPLE)
+		{
+			theDoor += 1;
+			cerr<<"Thread "<<thread_num<<" let person "<<theDoor<<" through the door."<<endl; //each thread should print this once in a serial order
+		}
+		pthread_mutex_unlock(&lock);
+	}
 	pthread_exit(NULL);
 }
 
 int main(){
 	pthread_mutex_init(&lock, NULL);
 	pthread_t thread_num[NUM_THREADS] = {0}; // array of pthread identifiers
+	int args[NUM_THREADS] = {0};
 
 	for (int i=0; i < NUM_THREADS; i++)
 	{
-		pthread_create(&thread_num[i], NULL, spin1, NULL);
+		args[i] = i;
+		pthread_create(&thread_num[i], NULL, spin1, &args[i]);
 	}
 
 	//release all threads simultaneously:
