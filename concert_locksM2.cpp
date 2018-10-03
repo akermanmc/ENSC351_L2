@@ -6,30 +6,24 @@
 #include <pthread.h>
 #include <unistd.h>
 
-#define NUM_THREADS 1000 //1000 is too heavy on Surface, laptop locks up
-#define NUM_PEOPLE  10000
+#define NUM_THREADS 100 //1000 is too heavy on Surface, laptop locks up
 
 using namespace std;
 
 bool all_threads_are_created = false;
 int theDoor = 0;
-bool PeopleArray[NUM_PEOPLE] = {false};
+bool PeopleArray[NUM_THREADS] = {false};
 
 void* spin2(void* val){
     //get the thread number
     int threadNum = *(int*)val;
-    int threadPos = threadNum;
+
 	while(!all_threads_are_created);
 
-	while(threadPos < NUM_PEOPLE)
-	{
-		while(!PeopleArray[threadPos]);
-		theDoor += 1;
-//		cerr<<"Person "<<theDoor<<" has gone through the door."<<endl; //each thread should print this once in a serial order
-//    	cerr<<"Thead "<<threadNum<<" is now at position "<<threadPos+NUM_THREADS<<endl;
-    	PeopleArray[(threadPos + 1)%NUM_PEOPLE] = true;
-    	threadPos +=  NUM_THREADS;
-    }
+	while(!PeopleArray[threadNum]);
+	theDoor += 1;
+//	cerr<<"Thread "<<threadNum<<" has gone through the door."<<endl; //each thread should print this once in a serial order
+    PeopleArray[(threadNum + 1)%NUM_THREADS] = true;
 	pthread_exit(NULL);
 }
 
