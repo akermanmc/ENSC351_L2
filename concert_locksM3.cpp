@@ -6,8 +6,9 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <atomic>
+#include <tracelib.h>
 
-#define NUM_THREADS 100 //1000 is too heavy on Surface, laptop locks up
+#define NUM_THREADS 1000 //1000 is too heavy on Surface, laptop locks up
 
 using namespace std;
 
