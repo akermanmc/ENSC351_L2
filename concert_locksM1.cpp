@@ -1,6 +1,8 @@
 // ENSC 351 Lab 2
 // implement 3 locks
 
+// method 1: single pthread_lock
+
 #include <iostream>
 #include <cstdlib>
 #include <pthread.h>
@@ -21,20 +23,25 @@ char name[20];
 char cat[20];
 char filename[20] = "m1trace.json";
 
-
-// method 1: single pthread_lock
-// can't find pthread_lock... use pthread_mutex_lock?
-//yup, i think that is what he meant
-
 void* spin1(void* val){
 
 	while(!all_threads_are_created);
+	//sprintf(name, "thread_wait_time");
+    //sprintf(cat, "foo");
+    //trace_event_start(name,cat, nullptr);
+
 	pthread_mutex_lock(&lock);
 
-	trace_instant_global("door_entry");
+	//trace_event_end(nullptr);//thread wait time
+
+	sprintf(name, "door_entry");
+    sprintf(cat, "foo");
+    trace_event_start(name,cat, nullptr);
+
 	theDoor += 1;
 
-	
+	trace_event_end(nullptr);//door entry trace
+
 //	cerr<<"Thread "<<theDoor<<" has locked the mutex."<<endl; //each thread should print this once in a serial order
 	pthread_mutex_unlock(&lock);
 
@@ -63,6 +70,7 @@ int main(){
 	sprintf(name, "release threads");
     sprintf(cat, "foo");
     trace_event_start(name,cat, nullptr);
+
 	all_threads_are_created = true;
 
 
