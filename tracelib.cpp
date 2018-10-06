@@ -1,5 +1,7 @@
 #include "tracelib.h"
 #include "eventEntries.h"
+#include <unistd.h>
+#include <pthread.h>
 #include <fstream>
 #include <cassert>
 #include <chrono>
@@ -49,8 +51,8 @@ void trace_event_start(const char *name, const char *categories, const char *arg
             current_time - start_time).count());
     entryArray[entryCounter].setName(name);
     entryArray[entryCounter].setCat(categories);
-    entryArray[entryCounter].setPID(1);
-    entryArray[entryCounter].setTID(1);
+    entryArray[entryCounter].setPID(getpid());
+    entryArray[entryCounter].setTID(pthread_self());
     entryArray[entryCounter].setPhase('B');
     if(arguments != nullptr)
         entryArray[entryCounter].setArgs(arguments);
@@ -64,8 +66,8 @@ void trace_event_end(const char *arguments) {
     current_time = chrono::system_clock::now();
     entryArray[entryCounter].setTS(chrono::duration_cast<chrono::microseconds>(
             current_time - start_time).count());
-    entryArray[entryCounter].setPID(1);
-    entryArray[entryCounter].setTID(1);
+    entryArray[entryCounter].setPID(getpid());
+    entryArray[entryCounter].setTID(pthread_self());
     entryArray[entryCounter].setPhase('E');
     if(arguments != nullptr)
         entryArray[entryCounter].setArgs(arguments);
@@ -80,8 +82,8 @@ void trace_instant_global(const char *name) {
     entryArray[entryCounter].setTS(chrono::duration_cast<chrono::microseconds>(
             current_time - start_time).count());
     entryArray[entryCounter].setName(name);
-    entryArray[entryCounter].setPID(1);
-    entryArray[entryCounter].setTID(1);
+    entryArray[entryCounter].setPID(getpid());
+    entryArray[entryCounter].setTID(pthread_self());
     entryArray[entryCounter].setPhase('i');
     entryCounter++;
 }
@@ -94,8 +96,8 @@ void trace_object_new(const char *name, const void *obj_pointer) {
     entryArray[entryCounter].setTS(chrono::duration_cast<chrono::microseconds>(
             current_time - start_time).count());
     entryArray[entryCounter].setName(name);
-    entryArray[entryCounter].setPID(1);
-    entryArray[entryCounter].setTID(1);
+    entryArray[entryCounter].setPID(getpid());
+    entryArray[entryCounter].setTID(pthread_self());
     entryArray[entryCounter].setPhase('N');
     entryArray[entryCounter].setObjRef(obj_pointer);
     entryCounter++;
@@ -113,8 +115,8 @@ void trace_counter(const char *name, const char *key, const char *value) {
     entryArray[entryCounter].setPhase('C');
     entryArray[entryCounter].setKey(key);
     entryArray[entryCounter].setValue(value);
-    entryArray[entryCounter].setPID(1);
-    entryArray[entryCounter].setTID(1);
+    entryArray[entryCounter].setPID(getpid());
+    entryArray[entryCounter].setTID(pthread_self());
     entryCounter++;
 }
 
@@ -172,7 +174,7 @@ void traceEntry::WriteToFile() {
         case 'i':
             *fileStream << "{\"name\": \"" << name << "\", \"ph\": \"" << phase
                         <<"\", \"ts\": "<< ts <<", \"pid\": "<< pid<< ", \"tid\": "
-                        << tid <<", \"s\": \"g\"}," << endl;
+                        << tid <<", \"s\": \"t\"}," << endl;
             break;
         case 'B':
             *fileStream << "{\"name\": \"" << name << "\", \"cat\": \"" << cat

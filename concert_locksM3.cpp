@@ -22,7 +22,7 @@ atomic<int> next_ticket(0);
 //trace stuff
 char name[20];
 char cat[20];
-char filename[20] = "m3trace.json";
+char filename[20] = "m3trace_5.json";
 
 void tickeLock_aquire()
 {
@@ -40,8 +40,11 @@ void* spin3(void* val){
 	while(!all_threads_are_created);
 
 	tickeLock_aquire();
+	trace_instant_global("thread_waiting");
+    trace_event_start("Mutex_aquired","Active", nullptr);
 	theDoor++;
 //	cerr<<"Thread "<<theDoor<<" has gone through the door."<<endl; //each thread should print this once in a serial order
+	trace_event_end(nullptr);//door entry trace
 	ticketLock_release();
 	pthread_exit(NULL);
 }
@@ -61,15 +64,12 @@ int main(){
 	}
 
 	//release all threads simultaneously:
+    trace_instant_global("threads_released");
 	all_threads_are_created = true;
-	sprintf(name, "release threads");
-    sprintf(cat, "foo");
-    trace_event_start(name,cat, nullptr);
 
 	for (int i = 0; i < NUM_THREADS; i++)
 		pthread_join(thread_num[i],NULL);
 
-	trace_event_end(nullptr);//release threads trace
 	trace_event_end(nullptr);//main trace
 
 	trace_end();

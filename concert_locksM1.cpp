@@ -21,7 +21,7 @@ pthread_mutex_t lock;
 //trace stuff
 char name[20];
 char cat[20];
-char filename[20] = "m1trace.json";
+char filename[20] = "m1trace_5.json";
 
 void* spin1(void* val){
 
@@ -29,14 +29,10 @@ void* spin1(void* val){
 	//sprintf(name, "thread_wait_time");
     //sprintf(cat, "foo");
     //trace_event_start(name,cat, nullptr);
-
 	pthread_mutex_lock(&lock);
-
+	trace_instant_global("thread_waiting");
 	//trace_event_end(nullptr);//thread wait time
-
-	sprintf(name, "door_entry");
-    sprintf(cat, "foo");
-    trace_event_start(name,cat, nullptr);
+    trace_event_start("Mutex_aquired","Active", nullptr);
 
 	theDoor += 1;
 
@@ -67,18 +63,12 @@ int main(){
 	}
 
 	//release all threads simultaneously:
-	sprintf(name, "release threads");
-    sprintf(cat, "foo");
-    trace_event_start(name,cat, nullptr);
-
+    trace_instant_global("threads_released");
 	all_threads_are_created = true;
-
 
 	for (int i = 0; i < NUM_THREADS; i++)
 		pthread_join(thread_num[i],NULL);
 
-
-	trace_event_end(nullptr);//release threads trace
 	trace_event_end(nullptr);//main trace
 
 	trace_end();

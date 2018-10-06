@@ -21,7 +21,7 @@ bool PeopleArray[NUM_THREADS] = {false};
 //trace stuff
 char name[20];
 char cat[20];
-char filename[20] = "m2trace.json";
+char filename[20] = "m2trace_5.json";
 
 void* spin2(void* val){
     //get the thread number
@@ -34,13 +34,10 @@ void* spin2(void* val){
     //trace_event_start(name,cat, nullptr);
 
 	while(!PeopleArray[threadNum]);
-
+	trace_instant_global("thread_waiting");
 	//trace_event_end(nullptr);//thread wait time
 
-	sprintf(name, "door_entry");
-    sprintf(cat, "foo");
-    trace_event_start(name,cat, nullptr);
-
+    trace_event_start("Mutex_aquired","Active", nullptr);
 	theDoor += 1;
 //	cerr<<"Thread "<<threadNum<<" has gone through the door."<<endl; //each thread should print this once in a serial order
     PeopleArray[(threadNum + 1)%NUM_THREADS] = true;
@@ -67,10 +64,8 @@ int main(){
 	}
 
 	//release all threads simultaneously:
+    trace_instant_global("threads_released");
 	all_threads_are_created = true;
-	sprintf(name, "release threads");
-    sprintf(cat, "foo");
-    trace_event_start(name,cat, nullptr);
 
 	//set the first person to go through:
     PeopleArray[0] = true;
@@ -78,7 +73,6 @@ int main(){
 	for (int i = 0; i < NUM_THREADS; i++)
 		pthread_join(thread_num[i],NULL);
 
-	trace_event_end(nullptr);//release threads trace
 	trace_event_end(nullptr);//main trace
 
 	trace_end();
